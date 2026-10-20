@@ -1,24 +1,16 @@
 package main
 
 import (
+	tea "charm.land/bubbletea/v2"
 	"fmt"
-	"log"
-
-	music_scan "github.com/Jeeshan-Shrestha/mutux.git/internal/library"
+	"github.com/Jeeshan-Shrestha/mutux.git/internal/ui"
+	"os"
 )
 
 func main() {
-
-	entries, err := music_scan.ReadDir("/home/nara/Music/")
-	if err != nil {
-		log.Fatal(err)
+	p := tea.NewProgram(ui.New("/home/nara/Music/"))
+	if _, err := p.Run(); err != nil {
+		fmt.Println("error:", err)
+		os.Exit(1)
 	}
-	for _, e := range entries {
-		kind := "FILE"
-		if e.IsDir {
-			kind = "DIR "
-		}
-		fmt.Println(kind, e.Name)
-	}
-
 }
