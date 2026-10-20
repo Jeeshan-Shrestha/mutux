@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"strings"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -12,8 +11,8 @@ const (
 	minW = 60
 	minH = 18
 
-	topH = 3 // outer height of the options bar (1 content row)
-	botH = 4 // outer height of the player bar (2 content rows)
+	topH = 3
+	botH = 4
 )
 
 func (m Model) View() tea.View {
@@ -42,7 +41,7 @@ func (m Model) layout() string {
 
 	top := box("", "options  |  tab: switch pane  |  q: quit", m.width, topH, false)
 
-	dirs := box("Directories", m.listView(), leftW, midH, m.focus == paneDirs)
+	dirs := box(m.dirsTitle(), m.dirsBody(leftW-2), leftW, midH, m.focus == paneDirs)
 	songs := box("Songs", "", midW, midH, m.focus == paneSongs)
 
 	info := box("Now Playing",
@@ -58,27 +57,28 @@ func (m Model) layout() string {
 	return lipgloss.JoinVertical(lipgloss.Left, top, mid, bottom)
 }
 
-func (m Model) listView() string {
+func (m Model) dirsTitle() string {
+	if len(m.entries) == 0 {
+		return "Directories"
+	}
+	return fmt.Sprintf("Directories (%d/%d)", m.cursor+1, len(m.entries))
+}
+
+func (m Model) dirsBody(innerW int) string {
 	if m.err != nil {
 		return "error: " + m.err.Error()
 	}
 	if len(m.entries) == 0 {
-		return "(empty)"
+		return " (empty)"
 	}
 
-	var b strings.Builder
+	items := make([]string, len(m.entries))
 	for i, e := range m.entries {
-		prefix := "  "
-		if i == m.cursor {
-			prefix = "> "
-		}
-		name := e.Name
+		items[i] = e.Name
 		if e.IsDir {
-			name += "/"
+			items[i] += "/"
 		}
-		b.WriteString(prefix)
-		b.WriteString(name)
-		b.WriteString("\n")
 	}
-	return strings.TrimRight(b.String(), "\n")
+
+	return renderRows(items, m.cursor, m.offset, innerW, m.dirsRows(), m.focus == paneDirs)
 }

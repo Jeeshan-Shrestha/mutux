@@ -1,6 +1,9 @@
 package ui
 
-import "charm.land/lipgloss/v2"
+import (
+	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
+)
 
 var (
 	colBorder = lipgloss.Color("240")
@@ -20,7 +23,7 @@ func box(title, body string, outerW, outerH int, focused bool) string {
 
 	content := body
 	if title != "" {
-		content = titleStyle.Render(title)
+		content = titleStyle.Render(ansi.Truncate(title, iw, "…"))
 		if body != "" {
 			content += "\n" + body
 		}

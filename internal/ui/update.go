@@ -2,6 +2,39 @@ package ui
 
 import tea "charm.land/bubbletea/v2"
 
+// dirsRows is how many list rows fit in the directories pane:
+// pane height minus 2 border rows and 1 title row.
+func (m Model) dirsRows() int {
+	r := (m.height - topH - botH) - 3
+	if r < 1 {
+		r = 1
+	}
+	return r
+}
+
+// scrollToCursor keeps the cursor inside the visible window.
+func (m *Model) scrollToCursor() {
+	rows := m.dirsRows()
+
+	if m.cursor < m.offset {
+		m.offset = m.cursor
+	}
+	if m.cursor >= m.offset+rows {
+		m.offset = m.cursor - rows + 1
+	}
+
+	maxOff := len(m.entries) - rows
+	if maxOff < 0 {
+		maxOff = 0
+	}
+	if m.offset > maxOff {
+		m.offset = maxOff
+	}
+	if m.offset < 0 {
+		m.offset = 0
+	}
+}
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -35,5 +68,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
+
+	m.scrollToCursor()
 	return m, nil
 }

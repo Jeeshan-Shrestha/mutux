@@ -19,6 +19,7 @@ type Model struct {
 	cwd     string
 	entries []library.Entry
 	cursor  int
+	offset  int
 	err     error
 
 	width, height int
