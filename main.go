@@ -4,9 +4,21 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Jeeshan-Shrestha/mutux.git/internal/library"
+	music_scan "github.com/Jeeshan-Shrestha/mutux.git/internal/library"
 )
 
 func main() {
-	entries, err := library.ReadDir("/home/nara/Music")
+
+	entries, err := music_scan.ReadDir("/home/nara/Music/")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, e := range entries {
+		kind := "FILE"
+		if e.IsDir {
+			kind = "DIR "
+		}
+		fmt.Println(kind, e.Name)
+	}
+
 }
