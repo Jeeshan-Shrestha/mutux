@@ -42,7 +42,7 @@ func (m Model) layout() string {
 	top := box("", "options  |  tab: switch pane  |  q: quit", m.width, topH, false)
 
 	dirs := box(m.dirsTitle(), m.dirsBody(leftW-2), leftW, midH, m.focus == paneDirs)
-	songs := box("Songs", "", midW, midH, m.focus == paneSongs)
+	songs := box(m.songsTitle(), m.songsBody(midW-2), midW, midH, m.focus == paneSongs)
 
 	info := box("Now Playing",
 		"album art\nformat / bitrate\nvolume\nduration\nartist",
@@ -74,11 +74,31 @@ func (m Model) dirsBody(innerW int) string {
 
 	items := make([]string, len(m.entries))
 	for i, e := range m.entries {
-		items[i] = e.Name
-		if e.IsDir {
-			items[i] += "/"
-		}
+		items[i] = e.Name + "/"
 	}
 
 	return renderRows(items, m.cursor, m.offset, innerW, m.dirsRows(), m.focus == paneDirs)
+}
+
+func (m Model) songsTitle() string {
+	if len(m.songs) == 0 {
+		return "Songs"
+	}
+	return fmt.Sprintf("Songs (%d/%d)", m.songCur+1, len(m.songs))
+}
+
+func (m Model) songsBody(innerW int) string {
+	if m.err != nil {
+		return ""
+	}
+	if len(m.songs) == 0 {
+		return " (no songs)"
+	}
+
+	items := make([]string, len(m.songs))
+	for i, e := range m.songs {
+		items[i] = e.Name
+	}
+
+	return renderRows(items, m.songCur, m.songOff, innerW, m.dirsRows(), m.focus == paneSongs)
 }

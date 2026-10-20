@@ -12,27 +12,21 @@ func (m Model) dirsRows() int {
 	return r
 }
 
-// scrollToCursor keeps the cursor inside the visible window.
-func (m *Model) scrollToCursor() {
-	rows := m.dirsRows()
-
-	if m.cursor < m.offset {
-		m.offset = m.cursor
+// clampScroll keeps cursor inside the window of rows starting at offset.
+func clampScroll(cursor, offset, rows, n int) int {
+	if cursor < offset {
+		offset = cursor
 	}
-	if m.cursor >= m.offset+rows {
-		m.offset = m.cursor - rows + 1
+	if cursor >= offset+rows {
+		offset = cursor - rows + 1
 	}
-
-	maxOff := len(m.entries) - rows
-	if maxOff < 0 {
-		maxOff = 0
+	if maxOff := n - rows; offset > maxOff {
+		offset = maxOff
 	}
-	if m.offset > maxOff {
-		m.offset = maxOff
+	if offset < 0 {
+		offset = 0
 	}
-	if m.offset < 0 {
-		m.offset = 0
-	}
+	return offset
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -45,30 +39,42 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 
-		case "tab":
+		case "tab", "ctrl+l":
 			m.focus = (m.focus + 1) % paneCount
-		case "shift+tab":
+		case "shift+tab", "ctrl+h":
 			m.focus = (m.focus + paneCount - 1) % paneCount
 
 		case "j", "down":
-			if m.focus == paneDirs && m.cursor < len(m.entries)-1 {
-				m.cursor++
-			}
+			m.move(1)
 		case "k", "up":
-			if m.focus == paneDirs && m.cursor > 0 {
-				m.cursor--
-			}
+			m.move(-1)
 		case "g":
-			if m.focus == paneDirs {
-				m.cursor = 0
-			}
+			m.move(-1 << 30)
 		case "G":
-			if m.focus == paneDirs && len(m.entries) > 0 {
-				m.cursor = len(m.entries) - 1
-			}
+			m.move(1 << 30)
 		}
 	}
 
-	m.scrollToCursor()
+	m.offset = clampScroll(m.cursor, m.offset, m.dirsRows(), len(m.entries))
+	m.songOff = clampScroll(m.songCur, m.songOff, m.dirsRows(), len(m.songs))
 	return m, nil
+}
+
+// move shifts the cursor of the focused list by delta, clamped to bounds.
+func (m *Model) move(delta int) {
+	clamp := func(c, n int) int {
+		if c >= n {
+			c = n - 1
+		}
+		if c < 0 {
+			c = 0
+		}
+		return c
+	}
+	switch m.focus {
+	case paneDirs:
+		m.cursor = clamp(m.cursor+delta, len(m.entries))
+	case paneSongs:
+		m.songCur = clamp(m.songCur+delta, len(m.songs))
+	}
 }

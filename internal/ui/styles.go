@@ -1,13 +1,15 @@
 package ui
 
 import (
+	"image/color"
+
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 )
 
 var (
-	colBorder = lipgloss.Color("240")
-	colFocus  = lipgloss.Color("212")
+	colBorder color.Color = lipgloss.BrightBlack // ansi 8
+	colFocus  color.Color = lipgloss.Blue        // ansi 4
 
 	titleStyle = lipgloss.NewStyle().Bold(true)
 )
