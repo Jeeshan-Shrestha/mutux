@@ -52,7 +52,7 @@ func isAudioFile(name string) bool {
 	return audioExts[strings.ToLower(filepath.Ext(name))]
 }
 
-func readDir(dir string) ([]Entry, error) {
+func ReadDir(dir string) ([]Entry, error) {
 	os_entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
