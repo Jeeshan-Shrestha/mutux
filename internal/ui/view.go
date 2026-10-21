@@ -5,6 +5,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 const (
@@ -29,30 +30,36 @@ func (m Model) View() tea.View {
 	return v
 }
 
+// rightHeights splits the middle band between Now Playing and Album Art.
+func (m Model) rightHeights() (top, bot int) {
+	midH := m.height - topH - botH
+	top = midH * 40 / 100
+	return top, midH - top
+}
+
 func (m Model) layout() string {
 	midH := m.height - topH - botH
 
-	leftW := m.width * 25 / 100
-	midW := m.width * 40 / 100
+	leftW := m.width * 22 / 100
+	midW := m.width * 33 / 100
 	rightW := m.width - leftW - midW // remainder, so no gap from rounding
 
-	rightTopH := midH * 55 / 100
-	rightBotH := midH - rightTopH
+	rightTopH, rightBotH := m.rightHeights()
 
-	top := box("", "options  |  tab: switch pane  |  q: quit", m.width, topH, false)
+	hint := "tab/ctrl+h/l: pane | enter: play | space: pause | n/p: next/prev | </>: seek | q: quit"
+	top := box("", ansi.Truncate(hint, m.width-2, "…"), m.width, topH, false)
 
 	dirs := box(m.dirsTitle(), m.dirsBody(leftW-2), leftW, midH, m.focus == paneDirs)
 	songs := box(m.songsTitle(), m.songsBody(midW-2), midW, midH, m.focus == paneSongs)
 
-	info := box("Now Playing",
-		"album art\nformat / bitrate\nvolume\nduration\nartist",
-		rightW, rightTopH, false)
-	queue := box("Queue / Lyrics", "", rightW, rightBotH, m.focus == paneQueue)
-	right := lipgloss.JoinVertical(lipgloss.Left, info, queue)
+	info := box("Now Playing", m.nowPlayingBody(rightW-2), rightW, rightTopH, false)
+	// body gets the pane minus the 2 border rows and 1 title row
+	art := box("Album Art", m.art.render(rightW-2, rightBotH-3), rightW, rightBotH, false)
+	right := lipgloss.JoinVertical(lipgloss.Left, info, art)
 
 	mid := lipgloss.JoinHorizontal(lipgloss.Top, dirs, songs, right)
 
-	bottom := box("", "seekbar\ncontrols", m.width, botH, false)
+	bottom := box("", m.controlsBody(m.width-2), m.width, botH, false)
 
 	return lipgloss.JoinVertical(lipgloss.Left, top, mid, bottom)
 }
@@ -97,7 +104,10 @@ func (m Model) songsBody(innerW int) string {
 
 	items := make([]string, len(m.songs))
 	for i, e := range m.songs {
-		items[i] = e.Name
+		items[i] = "  " + e.Name
+		if m.player.Loaded() && e.Path == m.nowPath {
+			items[i] = "▶ " + e.Name
+		}
 	}
 
 	return renderRows(items, m.songCur, m.songOff, innerW, m.dirsRows(), m.focus == paneSongs)

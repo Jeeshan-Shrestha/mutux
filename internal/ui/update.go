@@ -1,6 +1,10 @@
 package ui
 
-import tea "charm.land/bubbletea/v2"
+import (
+	"time"
+
+	tea "charm.land/bubbletea/v2"
+)
 
 // dirsRows is how many list rows fit in the directories pane:
 // pane height minus 2 border rows and 1 title row.
@@ -31,6 +35,15 @@ func clampScroll(cursor, offset, rows, n int) int {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tickMsg:
+		if m.player.Loaded() {
+			m.pos = m.player.Position()
+			if m.player.Ended() {
+				m.next()
+			}
+		}
+		return m, tick()
+
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 
@@ -43,6 +56,40 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.focus = (m.focus + 1) % paneCount
 		case "shift+tab", "ctrl+h":
 			m.focus = (m.focus + paneCount - 1) % paneCount
+
+		case "enter":
+			switch m.focus {
+			case paneDirs:
+				m.enter()
+			case paneSongs:
+				if len(m.songs) > 0 {
+					m.playQueue(m.songs, m.songCur)
+				}
+			}
+
+		case "space":
+			m.player.Toggle()
+		case "n":
+			m.next()
+		case "p":
+			m.prev()
+		case "<", ",":
+			m.player.Seek(-5 * time.Second)
+		case ">", ".":
+			m.player.Seek(5 * time.Second)
+		case "+", "=":
+			m.player.AdjustVolume(1)
+		case "-", "_":
+			m.player.AdjustVolume(-1)
+
+		case "l", "right":
+			if m.focus == paneDirs {
+				m.enter()
+			}
+		case "h", "left":
+			if m.focus == paneDirs {
+				m.leave()
+			}
 
 		case "j", "down":
 			m.move(1)
