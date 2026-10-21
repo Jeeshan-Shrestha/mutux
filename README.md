@@ -13,6 +13,13 @@ Go libraries (fetched automatically by `go build`): Bubble Tea, Lip Gloss, beep 
 ## Install
 
 ```sh
+sudo dnf copr enable nara-nara/mutux
+sudo dnf install mutux
+mutux
+```
+for fedora
+
+```sh
 git clone https://github.com/Jeeshan-Shrestha/mutux.git mutux
 cd mutux
 ./install.sh
