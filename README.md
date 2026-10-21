@@ -13,7 +13,7 @@ Go libraries (fetched automatically by `go build`): Bubble Tea, Lip Gloss, beep 
 ## Install
 
 ```sh
-git clone <repo-url> mutux
+git clone https://github.com/Jeeshan-Shrestha/mutux.git mutux
 cd mutux
 ./install.sh
 ```
