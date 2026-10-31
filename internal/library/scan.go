@@ -116,3 +116,33 @@ func ReadDir(dir string) ([]Entry, error) {
 
 	return entries, nil
 }
+
+// WalkAudio returns every audio file below root (hidden entries skipped),
+// sorted by path.
+func WalkAudio(root string) []Entry {
+	var out []Entry
+	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
+		if path != root && strings.HasPrefix(d.Name(), ".") {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if d.IsDir() || !isAudioFile(d.Name()) {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return nil
+		}
+		out = append(out, Entry{Name: d.Name(), Path: path, Size: info.Size()})
+		return nil
+	})
+	sort.SliceStable(out, func(i, j int) bool {
+		return strings.ToLower(out[i].Path) < strings.ToLower(out[j].Path)
+	})
+	return out
+}

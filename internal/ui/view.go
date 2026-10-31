@@ -46,18 +46,31 @@ func (m Model) layout() string {
 
 	rightTopH, rightBotH := m.rightHeights()
 
-	hint := "tab/ctrl+h/l: pane | enter: play | space: pause | n/p: next/prev | </>: seek | q: quit"
-	top := box("", ansi.Truncate(hint, m.width-2, "…"), m.width, topH, false)
+	hint := "tab/ctrl+h/l: pane | enter: play | /: search | space: pause | n/p: next/prev | </>: seek | q: quit"
+	searching := m.search.mode != searchOff
+	switch {
+	case searching:
+		hint = m.searchPrompt()
+	case m.search.status != "":
+		hint = m.search.status
+	}
+	top := box("", ansi.Truncate(hint, m.width-2, "…"), m.width, topH, searching)
 
-	dirs := box(m.dirsTitle(), m.dirsBody(leftW-2), leftW, midH, m.focus == paneDirs)
-	songs := box(m.songsTitle(), m.songsBody(midW-2), midW, midH, m.focus == paneSongs)
+	var left string
+	if searching {
+		left = box("YouTube Search", m.searchBody(leftW+midW-2), leftW+midW, midH, true)
+	} else {
+		dirs := box(m.dirsTitle(), m.dirsBody(leftW-2), leftW, midH, m.focus == paneDirs)
+		songs := box(m.songsTitle(), m.songsBody(midW-2), midW, midH, m.focus == paneSongs)
+		left = lipgloss.JoinHorizontal(lipgloss.Top, dirs, songs)
+	}
 
 	info := box("Now Playing", m.nowPlayingBody(rightW-2), rightW, rightTopH, false)
 	// body gets the pane minus the 2 border rows and 1 title row
 	art := box("Album Art", m.art.render(rightW-2, rightBotH-3), rightW, rightBotH, false)
 	right := lipgloss.JoinVertical(lipgloss.Left, info, art)
 
-	mid := lipgloss.JoinHorizontal(lipgloss.Top, dirs, songs, right)
+	mid := lipgloss.JoinHorizontal(lipgloss.Top, left, right)
 
 	bottom := box("", m.controlsBody(m.width-2), m.width, botH, false)
 

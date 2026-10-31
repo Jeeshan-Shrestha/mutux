@@ -34,6 +34,9 @@ func clampScroll(cursor, offset, rows, n int) int {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if nm, cmd, ok := m.updateSearch(msg); ok {
+		return nm, cmd
+	}
 	switch msg := msg.(type) {
 	case tickMsg:
 		if m.player.Loaded() {

@@ -2,7 +2,7 @@
 %global debug_package %{nil}
 
 Name:           mutux
-Version:        1.0.0
+Version:        1.1.0
 Release:        1%{?dist}
 Summary:        Terminal music player with album art
 
@@ -18,11 +18,15 @@ Source1:        %{name}-%{version}-vendor.tar.gz
 BuildRequires:  golang >= 1.26.1
 BuildRequires:  gcc
 BuildRequires:  pkgconfig(alsa)
+Recommends:     yt-dlp
+Recommends:     ffmpeg-free
+Recommends:     nodejs
 
 %description
 mutux is a minimal terminal music player with a low memory footprint. It
 browses ~/Music, plays mp3, flac, wav and ogg files, and shows track details
-and album art.
+and album art. It can also search your local songs and download music from
+YouTube (requires yt-dlp, node and ffmpeg).
 
 %prep
 %autosetup -a1
@@ -46,3 +50,5 @@ install -Dpm 0755 %{name} %{buildroot}%{_bindir}/%{name}
 %changelog
 * Wed Oct 21 2026 Jeeshan Shrestha <shresthajeesan@gmail.com> - 1.0.0-1
 - Initial package
+* Sat Oct 31 2026 Jeeshan Shrestha <shresthajeesan@gmail.com> - 1.1.0-1
+- Add YouTube search and download (/) and local song search (/local)

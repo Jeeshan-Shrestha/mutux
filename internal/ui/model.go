@@ -40,6 +40,8 @@ type Model struct {
 	pos     time.Duration
 	playErr string
 
+	search searchState
+
 	width, height int
 	focus         pane
 }
@@ -64,6 +66,16 @@ func (m *Model) load(dir string) bool {
 	m.cursor, m.offset = 0, 0
 	m.songCur, m.songOff = 0, 0
 	return true
+}
+
+// reload rescans cwd (e.g. after a download) keeping the cursors.
+func (m *Model) reload() {
+	c, o, sc, so := m.cursor, m.offset, m.songCur, m.songOff
+	if m.load(m.cwd) {
+		m.cursor, m.offset, m.songCur, m.songOff = c, o, sc, so
+		m.cursor = min(m.cursor, max(len(m.entries)-1, 0))
+		m.songCur = min(m.songCur, max(len(m.songs)-1, 0))
+	}
 }
 
 // enter descends into the highlighted directory.
