@@ -48,7 +48,7 @@ install -Dpm 0755 %{name} %{buildroot}%{_bindir}/%{name}
 %{_bindir}/%{name}
 
 %changelog
-* Wed Oct 21 2026 Jeeshan Shrestha <shresthajeesan@gmail.com> - 1.0.0-1
-- Initial package
 * Sat Oct 31 2026 Jeeshan Shrestha <shresthajeesan@gmail.com> - 1.1.0-1
 - Add YouTube search and download (/) and local song search (/local)
+* Wed Oct 21 2026 Jeeshan Shrestha <shresthajeesan@gmail.com> - 1.0.0-1
+- Initial package
